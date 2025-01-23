@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const mongoose = require("mongoose");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -25,6 +26,8 @@ app.use(express.json());
 app.get("/test-server", (req, res) => {
   res.send("Server is working");
 });
+
+app.use("/api/user", userRoutes);
 
 mongoose
   .connect(MONGODB_URI)

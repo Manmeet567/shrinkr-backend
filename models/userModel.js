@@ -36,8 +36,8 @@ userSchema.statics.signup = async function (name, email, mobileno, password) {
     throw Error("Email is not valid");
   }
 
-  if (password.length < 8) {
-    throw Error("Password must be at least 8 characters long");
+  if (password.length < 4) {
+    throw Error("Password must be at least 4 characters long");
   }
 
   const emailExists = await this.findOne({ email });

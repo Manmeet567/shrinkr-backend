@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
+const linkRoutes = require("./routes/linkRoutes");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.get("/test-server", (req, res) => {
 });
 
 app.use("/api/user", userRoutes);
+app.use("/api/link", linkRoutes);
 
 mongoose
   .connect(MONGODB_URI)

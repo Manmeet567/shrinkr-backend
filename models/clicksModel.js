@@ -3,24 +3,22 @@ const mongoose = require("mongoose");
 const ClickSchema = new mongoose.Schema(
   {
     short_url_id: {
-      type: mongoose.Schema.Types.ObjectId, // Reference to the Link model
-      ref: "Link", // Reference to the Link schema
+      type: String,  
       required: true,
     },
     device: {
       type: String,
-      enum: ["mobile", "tablet", "desktop"], // Limit device values to these options
+      enum: ["mobile", "tablet", "desktop"], 
       required: true,
     },
     IP: {
       type: String,
-      required: true, // Store the user's IP address
+      required: true, 
     },
   },
-  { timestamps: true } // Automatically adds `createdAt` and `updatedAt`
+  { timestamps: true }
 );
 
-// Create the Click model
 const ClickModel = mongoose.model("Click", ClickSchema);
 
 module.exports = ClickModel;

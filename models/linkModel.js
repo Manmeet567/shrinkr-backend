@@ -5,19 +5,25 @@ const LinkSchema = new mongoose.Schema(
   {
     destination_url: {
       type: String,
-      required: true, 
+      required: true,
     },
     remarks: {
       type: String,
-      required: true, 
+      required: true,
     },
     expiration: {
       type: Date,
-      default: null, 
+      default: null,
     },
     short_url_id: {
       type: String,
       required: true,
+      unique: true
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
     },
   },
   { timestamps: true }

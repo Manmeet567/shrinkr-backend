@@ -4,6 +4,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const linkRoutes = require("./routes/linkRoutes");
+const { submitClick } = require("./controllers/clickControllers");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.get("/test-server", (req, res) => {
 
 app.use("/api/user", userRoutes);
 app.use("/api/link", linkRoutes);
+app.get("/:url_id", submitClick);
 
 mongoose
   .connect(MONGODB_URI)

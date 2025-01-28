@@ -45,14 +45,34 @@ const createLink = async (req, res) => {
 const getLinks = async (req, res) => {
   try {
     const userId = req.user._id;
+    const { page = 1, limit = 10 } = req.query;
 
-    const links = await Link.find({ createdBy: userId });
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const totalLinks = await Link.countDocuments({ createdBy: userId });
+
+    const links = await Link.find({ createdBy: userId })
+      .skip(skip)
+      .limit(limitNumber);
 
     if (!links || links.length === 0) {
-      return res.status(404).json({ message: "No links found for this user." });
+      return res.status(200).json({
+        links: [],
+        totalLinks,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(totalLinks / limitNumber),
+      });
     }
 
-    return res.status(200).json(links);
+    return res.status(200).json({
+      links,
+      totalLinks,
+      currentPage: pageNumber,
+      totalPages: Math.ceil(totalLinks / limitNumber),
+    });
   } catch (error) {
     console.error("Error fetching user links:", error);
     return res.status(500).json({ error: "Internal server error." });

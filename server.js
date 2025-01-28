@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const linkRoutes = require("./routes/linkRoutes");
 const { submitClick } = require("./controllers/clickControllers");
+const clickRoutes = require("./routes/clickRoute");
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.get("/test-server", (req, res) => {
 app.use("/api/user", userRoutes);
 app.use("/api/link", linkRoutes);
 app.get("/:url_id", submitClick);
+app.use("/api/clicks", clickRoutes);
 
 mongoose
   .connect(MONGODB_URI)

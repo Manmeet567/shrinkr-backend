@@ -25,6 +25,11 @@ const LinkSchema = new mongoose.Schema(
       required: true,
       ref: "User",
     },
+    count: {
+      type: Number,
+      required: true,
+      default: 0
+    }
   },
   { timestamps: true }
 );

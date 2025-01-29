@@ -1,8 +1,82 @@
 const Click = require("../models/clicksModel");
 const Link = require("../models/linkModel");
-const User = require("../models/userModel");
 const requestIp = require("request-ip");
 const UAParser = require("ua-parser-js");
+const mongoose = require('mongoose');
+
+const getClickAnalytics = async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const links = await Link.find({
+      createdBy: new mongoose.Types.ObjectId(userId), 
+    }).select("short_url_id");
+
+    if (!links.length) {
+      return res.status(404).json({ message: "No links found for the user" });
+    }
+
+    const shortUrlIds = links.map((link) => link.short_url_id);
+
+    const clickAnalytics = await Click.aggregate([
+      {
+        $match: { short_url_id: { $in: shortUrlIds } }, 
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%d-%m-%Y", date: "$createdAt" } }, 
+          totalClicks: { $sum: 1 }, 
+        },
+      },
+      {
+        $sort: { _id: -1 }, // Sort by date in descending order
+      },
+    ]);
+
+    const deviceCount = await Click.aggregate([
+      {
+        $match: { short_url_id: { $in: shortUrlIds } }, 
+      },
+      {
+        $group: {
+          _id: "$device", 
+          count: { $sum: 1 }, 
+        },
+      },
+    ]);
+
+    const result = {
+      totalClicks: clickAnalytics.reduce(
+        (acc, day) => acc + day.totalClicks,
+        0
+      ),
+      dailyClicks: clickAnalytics.map((day) => {
+        const [dayPart, monthPart, yearPart] = day._id.split("-"); // Split the date string
+        const shortYear = yearPart.slice(-2); // Extract the last two digits of the year
+        const formattedDate = `${dayPart}-${monthPart}-${shortYear}`; // Format as DD-MM-YY
+
+        return {
+          date: formattedDate,
+          totalClicks: day.totalClicks,
+        };
+      }),
+      deviceCount: deviceCount.reduce(
+        (acc, device) => {
+          acc[device._id] = device.count;
+          return acc;
+        },
+        { mobile: 0, tablet: 0, desktop: 0 } 
+      ),
+    };
+
+    res.status(200).json(result); 
+  } catch (error) {
+    console.error("Error fetching click analytics:", error); 
+    res.status(500).json({ message: "Server error. Failed to fetch click analytics." });
+  }
+};
+
+
+
 
 const submitClick = async (req, res) => {
   try {
@@ -11,7 +85,8 @@ const submitClick = async (req, res) => {
     // Find the URL document
     const urlDocument = await Link.findOne({ short_url_id: url_id });
     if (!urlDocument) {
-      return res.status(404).send({ message: "Short URL not found" });
+      return res.send("<p>Invalid Link</p>");
+      // return res.status(404).send({ message: "Short URL not found" });
     }
 
     const destination_url = urlDocument.destination_url;
@@ -96,4 +171,5 @@ const getClicks = async (req, res) => {
   }
 };
 
-module.exports = { submitClick, getClicks };
+
+module.exports = { submitClick, getClicks, getClickAnalytics };

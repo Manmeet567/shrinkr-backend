@@ -32,8 +32,9 @@ app.get("/test-server", (req, res) => {
 
 app.use("/api/user", userRoutes);
 app.use("/api/link", linkRoutes);
-app.get("/:url_id", submitClick);
 app.use("/api/clicks", clickRoutes);
+
+app.get("/:url_id", submitClick);
 
 mongoose
   .connect(MONGODB_URI)

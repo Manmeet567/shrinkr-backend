@@ -1,10 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { submitClick, getClicks } = require("../controllers/clickControllers");
+const {
+  getClicks,
+  getClickAnalytics,
+} = require("../controllers/clickControllers");
 const requireAuth = require("../middleware/requireAuth");
 
-router.get("/:url_id", submitClick);
-
 router.post("/get-clicks", requireAuth, getClicks);
+
+router.get("/analytics", requireAuth, getClickAnalytics);
 
 module.exports = router;

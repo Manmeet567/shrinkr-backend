@@ -1,4 +1,5 @@
 const Link = require("../models/linkModel");
+const Click = require("../models/clicksModel");
 let nanoid;
 (async () => {
   nanoid = (await import("nanoid")).nanoid; // Dynamically import nanoid
@@ -79,4 +80,61 @@ const getLinks = async (req, res) => {
   }
 };
 
-module.exports = { createLink, getLinks };
+const updateLink = async (req, res) => {
+  try {
+    const { _id } = req.params;
+    const { destination_url, remarks, expiration } = req.body;
+    console.log(req.body);
+
+    if (!destination_url || !remarks) {
+      return res
+        .status(400)
+        .json({ error: "Destination URL and Remarks are required." });
+    }
+
+    const link = await Link.findById(_id);
+    if (!link) {
+      return res.status(404).json({ error: "Link not found." });
+    }
+
+    link.destination_url = destination_url
+      ? destination_url
+      : link.destination_url;
+    link.remarks = remarks ? remarks : link.remarks;
+    link.expiration = expiration ? expiration : link.expiration;
+
+    await link.save();
+
+    return res
+      .status(200)
+      .json({ message: "Link updated successfully.", link });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Something went wrong.", details: error.message });
+  }
+};
+
+const deleteLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedLink = await Link.findByIdAndDelete(id);
+
+    if (!deletedLink) {
+      return res.status(404).json({ message: "Link not found" });
+    }
+    
+    await Click.deleteMany({ short_url_id: deletedLink.short_url_id });
+
+    res.status(200).json({
+      message: "Link successfully deleted",
+      deletedLink,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error deleting link", error: error.message });
+  }
+};
+
+module.exports = { createLink, getLinks, updateLink, deleteLink };

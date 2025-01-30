@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
-const bcrypt = require("bcrypt");
+const Link = require("../models/linkModel");
+const Click = require("../models/clicksModel");
 const jwt = require("jsonwebtoken");
 
 const createToken = (_id) => {
@@ -52,5 +53,63 @@ const getUserData = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, signupUser, getUserData};
+const updateUserInfo = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const updatedFields = req.body;
 
+    if (!Object.keys(updatedFields).length) {
+      return res.status(400).json({ error: "No fields provided for update." });
+    }
+
+    console.log("Fields to update:", updatedFields);
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, {
+      new: true,
+      runValidators: true, // Ensure any field constraints are respected (e.g. email format)
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    return res.status(200).json({
+      message: "User updated successfully.",
+      updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return res.status(500).json({ error: "Server error while updating user." });
+  }
+};
+
+const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Step 1: Delete the user
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    await Link.deleteMany({ createdBy: userId });
+
+    await Click.deleteMany({ belongs_to: userId });
+
+    res.status(200).json({ message: "Account deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting account: ", error);
+    res
+      .status(500)
+      .json({ message: "Failed to delete account and associated data." });
+  }
+};
+
+module.exports = {
+  loginUser,
+  signupUser,
+  getUserData,
+  updateUserInfo,
+  deleteAccount,
+};

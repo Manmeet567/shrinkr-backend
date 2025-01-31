@@ -62,8 +62,6 @@ const updateUserInfo = async (req, res) => {
       return res.status(400).json({ error: "No fields provided for update." });
     }
 
-    console.log("Fields to update:", updatedFields);
-
     const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, {
       new: true,
       runValidators: true, // Ensure any field constraints are respected (e.g. email format)

@@ -84,7 +84,6 @@ const updateLink = async (req, res) => {
   try {
     const { _id } = req.params;
     const { destination_url, remarks, expiration } = req.body;
-    console.log(req.body);
 
     if (!destination_url || !remarks) {
       return res
